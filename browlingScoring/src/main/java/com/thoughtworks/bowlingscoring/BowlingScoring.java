@@ -1,75 +1,47 @@
 package com.thoughtworks.bowlingscoring;
 
 import com.thoughtworks.bowlingscoring.exception.InvalidScoreCountException;
-import com.thoughtworks.bowlingscoring.exception.InvalidScoreValueException;
+import com.thoughtworks.bowlingscoring.model.GeneralFrame;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.thoughtworks.bowlingscoring.Constants.FIRST_FRAME_INDEX;
+import static com.thoughtworks.bowlingscoring.Constants.MIN_SCORE_VALUE;
 
 public class BowlingScoring {
 
-    public static final String STR_SPLITTER_SPACE = " ";
-    public static final Integer MIN_SCORE_VALUE = 0;
-    public static final Integer MAX_SCORE_VALUE = 10;
-    public static final int MAX_SCORE_COUNT_VALUE = 21;
-
-    private List<Integer> scores;
+    private GeneralFrame frame;
 
     public BowlingScoring(String scoreString) {
-        this.initScoreList(scoreString);
+        this.initFrame(scoreString);
     }
 
-    private void initScoreList(String scoreString) {
-        scores = new ArrayList<Integer>();
-        if (scoreString != null && !scoreString.trim().isEmpty()) {
-            String[] splitStrings = scoreString.split(STR_SPLITTER_SPACE);
+    private void initFrame(String scoreString) {
 
+        GeneralFrame currentFrame = new GeneralFrame(FIRST_FRAME_INDEX);
+        this.frame = currentFrame;
+        if (scoreString != null && !scoreString.trim().isEmpty()) {
+            String[] splitStrings = scoreString.split(Constants.STR_SPLITTER_SPACE);
             for (String splitString : splitStrings) {
                 Integer score = Integer.valueOf(splitString);
-                if (score < MIN_SCORE_VALUE || score > MAX_SCORE_VALUE) {
-                    throw new InvalidScoreValueException("The value of the score for one ball is between 0 and 10.");
-                }
-                scores.add(score);
-                if (scores.size() < MAX_SCORE_COUNT_VALUE - 3 && score == MAX_SCORE_VALUE) {
-                    scores.add(MIN_SCORE_VALUE);
-                }
-            }
-
-            if (scores.size() > MAX_SCORE_COUNT_VALUE) {
-                throw new InvalidScoreCountException();
+                currentFrame = currentFrame.addScore(score);
             }
         }
-        for (int i = scores.size(); i < MAX_SCORE_COUNT_VALUE; i++) {
-            scores.add(MIN_SCORE_VALUE);
+
+        try {
+            // fill in the rest score with 0 for the entire game.
+            do {
+                currentFrame.addScore(MIN_SCORE_VALUE);
+            } while (1 == 1);
+        } catch (InvalidScoreCountException e) {
         }
     }
 
     public Integer calculate() {
         Integer totalScore = 0;
-        for (int i = 0; i < scores.size() && i < MAX_SCORE_COUNT_VALUE - 3; i += 2) {
-            Integer firstBallScore = scores.get(i);
-            Integer secondBallScore = scores.get(i + 1);
-            Integer nextFrameFirstBallScore = scores.get(i + 2);
-            Integer nextFrameSecondBallScore = scores.get(i + 3);
-            Integer nextNextFrameFirstBallScore = scores.get(i + 4);
-
-            Integer currentFrameScore = firstBallScore + secondBallScore;
-            if (currentFrameScore > MAX_SCORE_VALUE) {
-                throw new InvalidScoreValueException("The total score for one frame can not greater than 10.");
-            }
-            totalScore += currentFrameScore;
-            if (firstBallScore == MAX_SCORE_VALUE) {
-                if (nextFrameFirstBallScore == MAX_SCORE_VALUE) {
-                    totalScore += nextFrameFirstBallScore + nextNextFrameFirstBallScore;
-                } else {
-                    totalScore += nextFrameFirstBallScore + nextFrameSecondBallScore;
-                }
-            } else if (currentFrameScore == MAX_SCORE_VALUE) {
-                totalScore += nextFrameFirstBallScore;
-            }
+        GeneralFrame currentFrame = this.frame;
+        while (currentFrame != null) {
+            totalScore += currentFrame.getFrameScore();
+            currentFrame = currentFrame.getNextFrame();
         }
-        totalScore += scores.get(MAX_SCORE_COUNT_VALUE - 1) + scores.get(MAX_SCORE_COUNT_VALUE - 2) + scores.get
-                (MAX_SCORE_COUNT_VALUE - 3);
         return totalScore;
     }
 }

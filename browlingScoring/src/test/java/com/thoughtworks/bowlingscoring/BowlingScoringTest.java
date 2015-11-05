@@ -22,14 +22,14 @@ public class BowlingScoringTest {
         assertThat(bowlingScoring4.calculate(), equalTo(300));
         BowlingScoring bowlingScoring5 = new BowlingScoring("10 10 9 1 10 10 10 10 10 10 10 10 10");
         assertThat(bowlingScoring5.calculate(), equalTo(279));
+        BowlingScoring bowlingScoring6 = new BowlingScoring("");
+        assertThat(bowlingScoring6.calculate(), equalTo(0));
     }
 
     @Test
     public void testCalculate_InvalidScoreValueException_singleValueGT10() {
-        BowlingScoring bowlingScoring1 = new BowlingScoring("11 2 3 4");
-
         try {
-            bowlingScoring1.calculate();
+            new BowlingScoring("11 2 3 4");
             fail("should throw InvalidScoreValueException here.");
         } catch (InvalidScoreValueException e) {
             assertThat(e.getMessage(), equalTo("The value of the score for one ball is between 0 and 10."));
@@ -40,10 +40,8 @@ public class BowlingScoringTest {
 
     @Test
     public void testCalculate_InvalidScoreValueException_frameCountGT10() {
-        BowlingScoring bowlingScoring1 = new BowlingScoring("9 2 3 4");
-
         try {
-            bowlingScoring1.calculate();
+            new BowlingScoring("9 2 3 4");
             fail("should throw InvalidScoreValueException here.");
         } catch (InvalidScoreValueException e) {
             assertThat(e.getMessage(), equalTo("The total score for one frame can not greater than 10."));
@@ -55,10 +53,8 @@ public class BowlingScoringTest {
 
     @Test
     public void testCalculate_InvalidScoreCountException() {
-        BowlingScoring bowlingScoring1 = new BowlingScoring("11 2 3 4");
-
         try {
-            bowlingScoring1.calculate();
+            new BowlingScoring("10 10 10 10 10 10 10 10 10 10 10 10 10");
             fail("should throw InvalidScoreCountException here.");
         } catch (InvalidScoreCountException e) {
         } catch (Throwable e) {
